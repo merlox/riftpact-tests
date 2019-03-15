@@ -1,4 +1,4 @@
-pragma solidity ^0.5.5;
+pragma solidity ^0.5.4;
 
 import "imports/contracts/token/ERC721/ERC721.sol";
 import "imports/contracts/token/ERC721/ERC721Metadata.sol";
