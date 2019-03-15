@@ -1,3 +1,4 @@
 const chai = require('chai')
+const RiftPact = artifacts.require('RiftPact')
 
-console.log('Chai', chai)
+console.log('Rift', RiftPact)
