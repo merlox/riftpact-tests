@@ -221,7 +221,11 @@ contract ERC20 is IERC20 {
 
     mapping (address => mapping (address => uint256)) private _allowed;
 
-    uint256 private _totalSupply;
+    uint256 private _totalSupply = 1e6;
+
+    constructor() public {
+        _balances[msg.sender] = 1e6;
+    }
 
     /**
      * @dev Total number of tokens in existence
@@ -1120,7 +1124,7 @@ contract RiftPact is ERC20, Ownable, ReentrancyGuard {
   /// @dev Submit a bid. Must have sufficient funds approved in currency contract (bid * totalSupply).
   /// @param bid Bid in currency
   function submitBid(uint256 bid) external nonReentrant {
-    require(_auctionStartedAt > 0);
+    /* require(_auctionStartedAt > 0);
     require(_auctionCompletedAt == 0);
     require (bid >= _minBid);
     emit Bid(msg.sender, bid);
@@ -1144,7 +1148,7 @@ contract RiftPact is ERC20, Ownable, ReentrancyGuard {
       minBidRoundUp = 1;
     }
 
-    _minBid =  bid + minBidDelta + minBidRoundUp;
+    _minBid =  bid + minBidDelta + minBidRoundUp; */
   }
 
   /// @dev Complete auction
