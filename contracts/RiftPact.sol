@@ -1132,7 +1132,9 @@ contract RiftPact is ERC20, Ownable, ReentrancyGuard {
     uint256 _totalSupply = totalSupply();
 
     if (_topBidder != address(0)) {
-      require(ERC20(_currencyAddress).transfer(_topBidder, _topBid * _totalSupply));
+      /// NOTE: This has been commented out because it's wrong since we don't want to send the total supply multiplied by the bid
+      /* require(ERC20(_currencyAddress).transfer(_topBidder, _topBid * _totalSupply)); */
+      require(ERC20(_currencyAddress).transfer(_topBidder, _topBid));
     }
     /// NOTE: This has been commented out because it's wrong since we don't want to send the total supply multiplied by the bid
     /* require(ERC20(_currencyAddress).transferFrom(msg.sender, address(this), bid * _totalSupply)); */
@@ -1142,6 +1144,7 @@ contract RiftPact is ERC20, Ownable, ReentrancyGuard {
     _topBidder = msg.sender;
     _topBidSubmittedAt = now;
 
+    // This doesn't work
     uint256 minBidNumerator = bid * _minBidDeltaPermille;
     uint256 minBidDelta = minBidNumerator / 1000;
     uint256 minBidRoundUp = 0;

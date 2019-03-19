@@ -18,7 +18,7 @@ contract('RiftPact', accounts => {
         const tokenId = parseInt(await oathForge.nextTokenId()) - 1
         const auctionAllowedAt = Math.floor(new Date().getTime() / 1000) + 1 // 1 second after now
         const waitAfterLastBidToCloseAuction = 10 // You have to wait 10 seconds after the last bid to close the auction
-        const minIncrementPerBid = 100 // You must bid at least 100 tokens more to surpass the last bid
+        const minIncrementPerBid = 100 // You must bid at least 1 tokens more to surpass the last bid
         riftPact = await RiftPact.new(oathForge.address, tokenId, totalSupply, erc20.address, auctionAllowedAt, waitAfterLastBidToCloseAuction, minIncrementPerBid)
     })
     it('Should deploy a new riftpact successfully', async () => {
@@ -67,8 +67,8 @@ contract('RiftPact', accounts => {
     })
     it('Should start an auction and bid 3 times successfully', async () => {
         const bidOne = 500
-        const bidTwo = 601
-        const bidTree = 702
+        const bidTwo = 600
+        const bidTree = 700
 
         // Start the auction
         await asyncSetTimeout(2) // Wait until the auction is allowed
@@ -80,12 +80,14 @@ contract('RiftPact', accounts => {
         await transferAndApprove(erc20, riftPact.address, accounts[0], accounts[2], bidTwo)
         await transferAndApprove(erc20, riftPact.address, accounts[0], accounts[3], bidTree)
         await riftPact.submitBid(bidOne, { from: accounts[1] })
+        console.log('Bid increase', parseInt(await riftPact.minBid()))
+
         await riftPact.submitBid(bidTwo, { from: accounts[2] })
         await riftPact.submitBid(bidTree, { from: accounts[3] })
         const updatedMinBid = parseInt(await riftPact.minBid())
 
         timeAuctionStarted.should.not.equal(0)
-        updatedMinBid.should.equal(bid * 3)
+        updatedMinBid.should.equal(bidOne + bidTwo + bidTree)
     })
     it.skip('Should start an auction, bid 3 times and end it successfully', async () => {
         const bidOne = 500
@@ -113,7 +115,7 @@ contract('RiftPact', accounts => {
 
         timeAuctionStarted.should.not.equal(0)
         updatedMinBid.should.equal(bid * 3)
-        // auctionCompletedAt.should.not.equal(0)
+        auctionCompletedAt.should.not.equal(0)
     })
 })
 
