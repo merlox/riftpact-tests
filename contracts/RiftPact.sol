@@ -1124,7 +1124,7 @@ contract RiftPact is ERC20, Ownable, ReentrancyGuard {
   /// @dev Submit a bid. Must have sufficient funds approved in currency contract (bid * totalSupply).
   /// @param bid Bid in currency
   function submitBid(uint256 bid) external nonReentrant {
-    /* require(_auctionStartedAt > 0);
+    require(_auctionStartedAt > 0);
     require(_auctionCompletedAt == 0);
     require (bid >= _minBid);
     emit Bid(msg.sender, bid);
@@ -1134,7 +1134,9 @@ contract RiftPact is ERC20, Ownable, ReentrancyGuard {
     if (_topBidder != address(0)) {
       require(ERC20(_currencyAddress).transfer(_topBidder, _topBid * _totalSupply));
     }
-    require(ERC20(_currencyAddress).transferFrom(msg.sender, address(this), bid * _totalSupply));
+    /// NOTE: This has been commented out because it's wrong since we don't want to send the total supply multiplied by the bid
+    /* require(ERC20(_currencyAddress).transferFrom(msg.sender, address(this), bid * _totalSupply)); */
+    require(ERC20(_currencyAddress).transferFrom(msg.sender, address(this), bid));
 
     _topBid = bid;
     _topBidder = msg.sender;
@@ -1148,7 +1150,7 @@ contract RiftPact is ERC20, Ownable, ReentrancyGuard {
       minBidRoundUp = 1;
     }
 
-    _minBid =  bid + minBidDelta + minBidRoundUp; */
+    _minBid =  bid + minBidDelta + minBidRoundUp;
   }
 
   /// @dev Complete auction
