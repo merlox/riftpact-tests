@@ -1126,7 +1126,7 @@ contract RiftPact is ERC20, Ownable, ReentrancyGuard {
   function submitBid(uint256 bid) external nonReentrant {
     require(_auctionStartedAt > 0);
     require(_auctionCompletedAt == 0);
-    require (bid >= _minBid);
+    require(bid >= _minBid);
     emit Bid(msg.sender, bid);
 
     uint256 _totalSupply = totalSupply();
