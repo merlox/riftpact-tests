@@ -122,9 +122,45 @@ contract('RiftPact', accounts => {
         updatedMinBid.should.equal(bidThreeIncreased)
         auctionCompletedAt.should.not.equal(0)
     })
-    it.skip('Should increase the minBid after a small bid of 10 tokens', async () => {
-        const bid = 10
-        const bidIncreased = 11
+    it('Should increase the minBid after a small bid of 20 tokens multiplied by a minBidDeltaPermille of 10 to 21', async () => {
+        const bidOne = 20
+        const bidIncreased = 21
+
+        // Start the auction
+        await asyncSetTimeout(2) // Wait until the auction is allowed
+        await riftPact.startAuction()
+        const timeAuctionStarted = parseInt(await riftPact.auctionStartedAt())
+
+        // Bid
+        await transferAndApprove(erc20, riftPact.address, accounts[0], accounts[1], bidOne)
+        await riftPact.submitBid(bidOne, { from: accounts[1] })
+        const updatedMinBid = parseInt(await riftPact.minBid())
+
+        timeAuctionStarted.should.not.equal(0)
+        updatedMinBid.should.equal(bidIncreased)
+    })
+    it('Should increase the minBid after a big bid of 3030 tokens multiplied by a minBidDeltaPermille of 10 to 3060', async () => {
+        const bidOne = 3030
+        const bidIncreased = 3060
+
+        // Start the auction
+        await asyncSetTimeout(2) // Wait until the auction is allowed
+        await riftPact.startAuction()
+        const timeAuctionStarted = parseInt(await riftPact.auctionStartedAt())
+
+        // Bid
+        await transferAndApprove(erc20, riftPact.address, accounts[0], accounts[1], bidOne)
+        await riftPact.submitBid(bidOne, { from: accounts[1] })
+        const updatedMinBid = parseInt(await riftPact.minBid())
+
+        timeAuctionStarted.should.not.equal(0)
+        updatedMinBid.should.equal(bidIncreased)
+    })
+    it('Should send the payout to the latest bidder after the auction is ended', async () => {
+        const bidOne = 500
+        const bidTwo = 600
+        const bidThree = 700
+        const bidThreeIncreased = 707
 
         // Start the auction
         await asyncSetTimeout(2) // Wait until the auction is allowed
@@ -144,6 +180,9 @@ contract('RiftPact', accounts => {
         await asyncSetTimeout(11) // Wait until the time between bids is reached
         await riftPact.completeAuction()
         const auctionCompletedAt = parseInt(await riftPact.auctionCompletedAt())
+
+        // Send payout
+        await riftPact.payout()
 
         timeAuctionStarted.should.not.equal(0)
         updatedMinBid.should.equal(bidThreeIncreased)

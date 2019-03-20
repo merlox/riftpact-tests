@@ -921,7 +921,6 @@ contract OathForge is ERC721, ERC721Metadata, Ownable {
   function setIsBlacklisted(address to, bool __isBlacklisted) external onlyOwner {
     _isBlacklisted[to] = __isBlacklisted;
   }
-
 }
 
 contract IERC721Receiver {
@@ -993,17 +992,14 @@ contract ReentrancyGuard {
 contract RiftPact is ERC20, Ownable, ReentrancyGuard {
 
   using SafeMath for uint256;
-
   uint256 private _parentTokenId;
   uint256 private _auctionAllowedAt;
   address private _currencyAddress;
   address private _parentToken;
   uint256 private _minAuctionCompleteWait;
   uint256 private _minBidDeltaPermille;
-
   uint256 private _auctionStartedAt;
   uint256 private _auctionCompletedAt;
-
   uint256 private _minBid = 1;
   uint256 private _topBid;
   address private _topBidder;
@@ -1144,11 +1140,21 @@ contract RiftPact is ERC20, Ownable, ReentrancyGuard {
     _topBidder = msg.sender;
     _topBidSubmittedAt = now;
 
+    /* 3030 * 10 = 30300
+    delta = 30300 / 1000 = 30,3
+    30300 % 1000 = 300 > 0, yes
+    roundUp = 1
+    minBid = 3030 + 30 + 1 which is wrong, it should be 3060 instead of 3061 */
+
     uint256 minBidNumerator = bid * _minBidDeltaPermille;
     uint256 minBidDelta = minBidNumerator / 1000;
     uint256 minBidRoundUp = 0;
 
-    if((bid * _minBidDeltaPermille) % 1000 > 0) {
+    /// NOTE commented out because it doesn't work as expected with big bids
+    /* if((bid * _minBidDeltaPermille) % 1000 > 0) {
+      minBidRoundUp = 1;
+    } */
+    if((bid * _minBidDeltaPermille) < 1000) {
       minBidRoundUp = 1;
     }
 
@@ -1170,8 +1176,11 @@ contract RiftPact is ERC20, Ownable, ReentrancyGuard {
     require(balance > 0);
     require(_auctionCompletedAt > 0);
     emit Payout(msg.sender, balance);
-    require(ERC20(_currencyAddress).transfer(msg.sender, balance * _topBid));
-    _burn(msg.sender, balance);
+    /// NOTE this won't work since we can't send more tokens than what's already in this contract
+    /* require(ERC20(_currencyAddress).transfer(msg.sender, balance * _topBid)); */
+    require(ERC20(_currencyAddress).transfer(msg.sender, _topBid));
+    /// NOTE Remove this since the sender doesn't have any riftPact tokens inside this contract so we can't burn them.
+    /* _burn(msg.sender, balance); */
   }
 
   /// @dev Returns if an address is blacklisted
