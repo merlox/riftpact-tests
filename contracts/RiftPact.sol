@@ -1144,7 +1144,6 @@ contract RiftPact is ERC20, Ownable, ReentrancyGuard {
     _topBidder = msg.sender;
     _topBidSubmittedAt = now;
 
-    // This doesn't work
     uint256 minBidNumerator = bid * _minBidDeltaPermille;
     uint256 minBidDelta = minBidNumerator / 1000;
     uint256 minBidRoundUp = 0;

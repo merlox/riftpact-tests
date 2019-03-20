@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "chai": "^4.2.0",
+    "ganache-cli": "^6.4.1",
     "openzeppelin-solidity": "^2.2.0"
   },
   "devDependencies": {},

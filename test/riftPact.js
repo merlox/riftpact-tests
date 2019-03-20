@@ -1,10 +1,15 @@
 const should = require('chai').should()
+const ganache = require('ganache-cli').server({gasLimit: web3.utils.toHex(8e6)})
 const RiftPact = artifacts.require('RiftPact')
 const OathForge = artifacts.require('OathForge')
 const ERC20 = artifacts.require('ERC20')
 let riftPact = {}
 let oathForge = {}
 let erc20 = {}
+
+ganache.listen(8545, (err, blockchain) => {
+    if(err) console.error(err)
+})
 
 contract('RiftPact', accounts => {
     beforeEach(async () => {
@@ -68,7 +73,8 @@ contract('RiftPact', accounts => {
     it('Should start an auction and bid 3 times successfully', async () => {
         const bidOne = 500
         const bidTwo = 600
-        const bidTree = 700
+        const bidThree = 700
+        const bidThreeIncreased = 770
 
         // Start the auction
         await asyncSetTimeout(2) // Wait until the auction is allowed
@@ -78,21 +84,20 @@ contract('RiftPact', accounts => {
         // Bid
         await transferAndApprove(erc20, riftPact.address, accounts[0], accounts[1], bidOne)
         await transferAndApprove(erc20, riftPact.address, accounts[0], accounts[2], bidTwo)
-        await transferAndApprove(erc20, riftPact.address, accounts[0], accounts[3], bidTree)
+        await transferAndApprove(erc20, riftPact.address, accounts[0], accounts[3], bidThree)
         await riftPact.submitBid(bidOne, { from: accounts[1] })
-        console.log('Bid increase', parseInt(await riftPact.minBid()))
-
         await riftPact.submitBid(bidTwo, { from: accounts[2] })
-        await riftPact.submitBid(bidTree, { from: accounts[3] })
+        await riftPact.submitBid(bidThree, { from: accounts[3] })
         const updatedMinBid = parseInt(await riftPact.minBid())
 
         timeAuctionStarted.should.not.equal(0)
-        updatedMinBid.should.equal(bidOne + bidTwo + bidTree)
+        updatedMinBid.should.equal(bidThreeIncreased)
     })
-    it.skip('Should start an auction, bid 3 times and end it successfully', async () => {
+    it('Should start an auction, bid 3 times and end it successfully', async () => {
         const bidOne = 500
-        const bidTwo = 601
-        const bidTree = 702
+        const bidTwo = 600
+        const bidThree = 700
+        const bidThreeIncreased = 770
 
         // Start the auction
         await asyncSetTimeout(2) // Wait until the auction is allowed
@@ -102,19 +107,19 @@ contract('RiftPact', accounts => {
         // Bid
         await transferAndApprove(erc20, riftPact.address, accounts[0], accounts[1], bidOne)
         await transferAndApprove(erc20, riftPact.address, accounts[0], accounts[2], bidTwo)
-        await transferAndApprove(erc20, riftPact.address, accounts[0], accounts[3], bidTree)
+        await transferAndApprove(erc20, riftPact.address, accounts[0], accounts[3], bidThree)
         await riftPact.submitBid(bidOne, { from: accounts[1] })
         await riftPact.submitBid(bidTwo, { from: accounts[2] })
-        await riftPact.submitBid(bidTree, { from: accounts[3] })
+        await riftPact.submitBid(bidThree, { from: accounts[3] })
         const updatedMinBid = parseInt(await riftPact.minBid())
 
         // End auction
-        await riftPact.asyncSetTimeout(11) // Wait until the time between bids is reached
+        await asyncSetTimeout(11) // Wait until the time between bids is reached
         await riftPact.completeAuction()
         const auctionCompletedAt = parseInt(await riftPact.auctionCompletedAt())
 
         timeAuctionStarted.should.not.equal(0)
-        updatedMinBid.should.equal(bid * 3)
+        updatedMinBid.should.equal(bidThreeIncreased)
         auctionCompletedAt.should.not.equal(0)
     })
 })
